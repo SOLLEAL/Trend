@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Berita Jombang</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+      --dark-gradient: linear-gradient(135deg, #434343 0%, #000000 100%);
+      
+      --bg-primary: #0f0f23;
+      --bg-secondary: #161b33;
+      --bg-card: #1e2139;
+      --text-primary: #ffffff;
+      --text-secondary: #9ca3af;
+      --border-color: #2d3748;
+      --shadow-primary: 0 10px 30px rgba(0, 0, 0, 0.3);
+      --shadow-card: 0 8px 25px rgba(0, 0, 0, 0.15);
+      --border-radius: 16px;
+      --border-radius-lg: 24px;
+    }
+
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .header {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 20px 0;
+      margin-bottom: 30px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--primary-gradient);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: white;
+      box-shadow: var(--shadow-card);
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, #fff 0%, #9ca3af 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .filter-section {
+      background: var(--bg-card);
+      border-radius: var(--border-radius);
+      padding: 16px;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-card);
+    }
+
+    .filter-section label {
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      background: var(--bg-card);
+      padding: 20px;
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-card);
+    }
+
+    .toolbar label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .grid { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      grid-gap: 24px;
+      margin-bottom: 30px;
+    }
+
+    @media (max-width: 768px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card { 
+      background: var(--bg-card);
+      border-radius: var(--border-radius);
+      padding: 24px;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-card);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--primary-gradient);
+      border-radius: var(--border-radius) var(--border-radius) 0 0;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .card h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .full { 
+      grid-column: span 2; 
+    }
+
+    @media (max-width: 1200px) {
+      .full {
+        grid-column: span 1;
+      }
+    }
+
+    .btn { 
+      background: var(--primary-gradient);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn:disabled { 
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-success {
+      background: var(--success-gradient);
+      box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+    }
+
+    .btn-success:hover {
+      box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+    }
+
+    .btn-secondary {
+      background: var(--warning-gradient);
+      box-shadow: 0 4px 15px rgba(67, 233, 123, 0.3);
+    }
+
+    .btn-secondary:hover {
+      box-shadow: 0 8px 25px rgba(67, 233, 123, 0.4);
+    }
+
+    table { 
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-weight: 600;
+      padding: 16px 12px;
+      border-bottom: 2px solid var(--border-color);
+      text-align: left;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      transition: all 0.2s ease;
+    }
+
+    tr:hover td {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+
+    tr:hover {
+      transform: scale(1.01);
+    }
+
+    td a {
+      color: #60a5fa;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    td a:hover {
+      color: #93c5fd;
+      text-decoration: underline;
+    }
+
+    input, select { 
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .wordcloud-container {
+      text-align: center;
+      background: var(--bg-secondary);
+      border-radius: var(--border-radius);
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    .wordcloud-container img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: var(--shadow-card);
+      transition: transform 0.3s ease;
+    }
+
+    .wordcloud-container img:hover {
+      transform: scale(1.02);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--primary-gradient);
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      color: white;
+      box-shadow: var(--shadow-card);
+    }
+
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin-top: 16px;
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-secondary);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary-gradient);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--secondary-gradient);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-content">
+      <div class="logo">
+        <div class="logo-icon">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <h1>Dashboard Monitoring Berita — Kabupaten Jombang</h1>
+      </div>
+      <div class="filter-section">
+        <label for="category-filter">
+          <i class="fas fa-filter"></i>
+          Filter kategori:
+        </label>
+        <select id="category-filter" onchange="onCategoryChange()">
+          <option value="">Semua</option>
+          <option>Pemerintahan</option>
+          <option>Ekonomi</option>
+          <option>Olahraga</option>
+          <option>Hukum</option>
+          <option>Lainnya</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="toolbar">
+      <label>
+        <i class="fas fa-calendar-alt"></i>
+        Rentang hari:
+        <select id="days">
+          <option value="3">3</option>
+          <option value="7" selected>7</option>
+          <option value="14">14</option>
+          <option value="30">30</option>
+        </select>
+      </label>
+      <button class="btn" id="refresh">
+        <i class="fas fa-sync-alt"></i>
+        Refresh
+      </button>
+      <button class="btn btn-success" id="crawl">
+        <i class="fas fa-spider"></i>
+        Crawl Sekarang
+      </button>
+      <a class="btn btn-secondary" id="pdf" href="/export-pdf">
+        <i class="fas fa-file-pdf"></i>
+        Export PDF
+      </a>
+    </div>
+
+    <div class="grid">
+      <div class="card fade-in">
+        <h3><i class="fas fa-chart-line"></i> Tren Berita per Hari</h3>
+        <div class="chart-container">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+      
+      <div class="card fade-in">
+        <h3><i class="fas fa-tags"></i> Kata Kunci Teratas</h3>
+        <div class="chart-container">
+          <canvas id="keywordChart"></canvas>
+        </div>
+      </div>
+      
+      <div class="card full fade-in">
+        <h3><i class="fas fa-cloud"></i> Word Cloud</h3>
+        <div class="wordcloud-container">
+          <img id="wc" src="/wordcloud.png" alt="Word Cloud" />
+        </div>
+      </div>
+      
+      <div class="card full fade-in">
+        <h3><i class="fas fa-newspaper"></i> Artikel Terbaru</h3>
+        <div style="overflow-x: auto;">
+          <table id="tbl">
+            <thead>
+              <tr>
+                <th><i class="fas fa-heading"></i> Judul</th>
+                <th><i class="fas fa-globe"></i> Sumber</th>
+                <th><i class="fas fa-clock"></i> Terbit</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+function onCategoryChange(){
+  var v = document.getElementById('category-filter').value;
+  var q = v ? '?category=' + encodeURIComponent(v) : '';
+  window.location = '/' + q;
+}
+
+// preselect if query param exists
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  var c = params.get('category');
+  if(c){ document.getElementById('category-filter').value = c; }
+})();
+
+const daysSel = document.getElementById('days');
+const btnRefresh = document.getElementById('refresh');
+const btnCrawl = document.getElementById('crawl');
+const imgWC = document.getElementById('wc');
+const tblBody = document.querySelector('#tbl tbody');
+let trendChart, keywordChart;
+
+function qs(url) {
+  const d = daysSel.value;
+  return url + (url.includes('?') ? '&' : '?') + 'days=' + encodeURIComponent(d);
+}
+
+async function loadTrend() {
+  const res = await fetch(qs('/api/trend'));
+  const data = await res.json();
+  if (trendChart) trendChart.destroy();
+  
+  const ctx = document.getElementById('trendChart');
+  trendChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.labels,
+      datasets: [{
+        label: 'Jumlah Berita',
+        data: data.counts,
+        borderColor: '#667eea',
+        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+        tension: 0.4,
+        fill: true,
+        pointBackgroundColor: '#667eea',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 2,
+        pointRadius: 6,
+        pointHoverRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: {
+            color: '#ffffff',
+            font: {
+              family: 'Inter'
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: '#9ca3af',
+            font: {
+              family: 'Inter'
+            }
+          },
+          grid: {
+            color: 'rgba(156, 163, 175, 0.1)'
+          }
+        },
+        y: {
+          ticks: {
+            color: '#9ca3af',
+            font: {
+              family: 'Inter'
+            }
+          },
+          grid: {
+            color: 'rgba(156, 163, 175, 0.1)'
+          }
+        }
+      }
+    }
+  });
+}
+
+async function loadKeywords() {
+  const res = await fetch(qs('/api/keywords'));
+  const data = await res.json();
+  if (keywordChart) keywordChart.destroy();
+  
+  const ctx = document.getElementById('keywordChart');
+  keywordChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: data.labels,
+      datasets: [{
+        label: 'Frekuensi',
+        data: data.counts,
+        backgroundColor: [
+          '#667eea', '#764ba2', '#f093fb', '#f5576c',
+          '#4facfe', '#00f2fe', '#43e97b', '#38f9d7'
+        ],
+        borderRadius: 8,
+        borderSkipped: false,
+      }]
+    },
+    options: { 
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: {
+            color: '#ffffff',
+            font: {
+              family: 'Inter'
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: '#9ca3af',
+            font: {
+              family: 'Inter'
+            }
+          },
+          grid: {
+            color: 'rgba(156, 163, 175, 0.1)'
+          }
+        },
+        y: {
+          ticks: {
+            color: '#9ca3af',
+            font: {
+              family: 'Inter'
+            }
+          },
+          grid: {
+            color: 'rgba(156, 163, 175, 0.1)'
+          }
+        }
+      }
+    }
+  });
+}
+
+async function loadArticles() {
+  const res = await fetch(qs('/api/articles'));
+  const data = await res.json();
+  tblBody.innerHTML = '';
+  data.forEach(a => {
+    const tr = document.createElement('tr');
+    const t = new Date(a.published_at).toLocaleString();
+    tr.innerHTML = `<td><a href="${a.url}" target="_blank" rel="noopener">${a.title}</a></td>
+                    <td>${a.source}</td>
+                    <td>${t}</td>`;
+    tblBody.appendChild(tr);
+  });
+}
+
+function refreshWC() {
+  imgWC.src = qs('/wordcloud.png') + '&_=' + Date.now();
+}
+
+async function refreshAll() {
+  // Add loading state
+  btnRefresh.innerHTML = '<div class="loading"></div> Loading...';
+  btnRefresh.disabled = true;
+  
+  try {
+    await Promise.all([loadTrend(), loadKeywords(), loadArticles()]);
+    refreshWC();
+    document.getElementById('pdf').href = qs('/export-pdf');
+  } catch(e) {
+    console.error('Error refreshing data:', e);
+  } finally {
+    btnRefresh.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+    btnRefresh.disabled = false;
+  }
+}
+
+btnRefresh.addEventListener('click', refreshAll);
+
+btnCrawl.addEventListener('click', async () => {
+  const originalText = btnCrawl.innerHTML;
+  btnCrawl.innerHTML = '<div class="loading"></div> Crawling...';
+  btnCrawl.disabled = true;
+  
+  try {
+    const res = await fetch('/crawl-now');
+    const data = await res.json();
+    alert('Crawl selesai. Artikel baru ditambahkan: ' + data.added);
+    await refreshAll();
+  } catch(e) {
+    alert('Gagal crawl sekarang.');
+  } finally {
+    btnCrawl.innerHTML = originalText;
+    btnCrawl.disabled = false;
+  }
+});
+
+daysSel.addEventListener('change', refreshAll);
+
+// Initial load with fade in animation
+setTimeout(() => {
+  refreshAll();
+}, 100);
+</script>
+
+</body>
+</html>
